@@ -1,56 +1,45 @@
-name: Manual Workflow Approval
-description: Pause a workflow and get user approval to continue
-branding:
-  icon: pause
-  color: yellow
+name: 'Manual Workflow Approval'
+description: 'Pause a workflow and get user approval to continue'
 inputs:
   approvers:
-    description: Required approvers
+    description: 'Required approvers'
     required: true
   secret:
-    description: Secret
+    description: 'GitHub token'
     required: true
   minimum-approvals:
-    description: Minimum number of approvals to progress workflow
+    description: 'Minimum number of approvals to progress workflow'
     required: false
+    default: '1'
   issue-title:
-    description: The custom subtitle for the issue
+    description: 'The custom subtitle for the issue'
     required: false
   issue-body:
-    description: The custom body for the issue
-    required: false
-  issue-body-file-path:
-    description: The file path to a custom body for the issue
+    description: 'The custom body for the issue'
     required: false
   exclude-workflow-initiator-as-approver:
-    description: Whether or not to filter out the user who initiated the workflow as an approver if they are in the approvers list
+    description: 'Whether or not to filter out the user who initiated the workflow as an approver'
     required: false
     default: 'false'
-  additional-approved-words:
-    description: Comma separated list of words that can be used to approve beyond the defaults.
-    required: false
-    default: ''
-  additional-denied-words:
-    description: Comma separated list of words that can be used to deny beyond the defaults.
-    required: false
-    default: ''
-  target-repository-owner:
-    description: Owner of the repository in which the issue will be created.
-    default: ''
-  target-repository:
-    description: Name of the repository in which the issue will be created.
-    default: ''
-  fail-on-denial:
-    description: Whether or not to fail the workflow if the approval is denied
-    required: false
-    default: 'true'
 outputs:
   issue-number:
-    description: The number of the issue created
+    description: 'The number of the issue created'
   issue-url:
-    description: The URL of the issue created
+    description: 'The URL of the issue created'
   approval-status:
-    description: The status of the approval ("approved" or "denied")
+    description: 'The status of the approval ("approved" or "denied")'
 runs:
-  using: docker
-  image: docker://ghcr.io/trstringer/manual-approval:1.11.0
+  using: "composite"
+  steps:
+    - run: ${{ github.action_path }}/manual-approval
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.secret }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_RUN_ID: ${{ github.run_id }}
+        GITHUB_ACTOR: ${{ github.actor }}
+        INPUT_APPROVERS: ${{ inputs.approvers }}
+        INPUT_MINIMUM-APPROVALS: ${{ inputs.minimum-approvals }}
+        INPUT_ISSUE-TITLE: ${{ inputs.issue-title }}
+        INPUT_ISSUE-BODY: ${{ inputs.issue-body }}
+        INPUT_EXCLUDE-WORKFLOW-INITIATOR-AS-APPROVER: ${{ inputs.exclude-workflow-initiator-as-approver }}
